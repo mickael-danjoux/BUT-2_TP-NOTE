@@ -6,5 +6,5 @@ export default {
   },
   testMatch: ['**/test/**/*.js', '**/?(*.)+(spec|test).js'],
   verbose: true,
-  setupFilesAfterEnv: ['./jest.setup.js']
+  setupFilesAfterEnv: ['./jest.setup.js'],
 }

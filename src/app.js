@@ -23,5 +23,4 @@ app.use('/', indexRoutes)
 
 // Middleware de gestion des erreurs globales - doit être le dernier middleware
 
-
 export default app

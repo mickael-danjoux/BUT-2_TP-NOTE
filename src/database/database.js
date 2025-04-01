@@ -15,11 +15,10 @@ export const sequelize = new Sequelize(
       max: 5,
       min: 0,
       acquire: 30000,
-      idle: 10000
-    }
-  }
+      idle: 10000,
+    },
+  },
 )
-
 
 export const testConnection = async () => {
   // Complétez et utilisez la fonction
@@ -27,4 +26,4 @@ export const testConnection = async () => {
 
 export const initDb = async () => {
   // Complétez la fonction et appelez-la au démarrage du serveur
-};
+}
