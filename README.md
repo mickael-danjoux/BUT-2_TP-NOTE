@@ -125,6 +125,8 @@ Nous allons utiliser un [JWT](https://jwt.io/) pour authentifier les utilisateur
 ##### Créer une clé de sécurité
 
 La commande suivante permet de générer une clé pour signer le JWT. Utilisez la valeur obtenu dans les variables d’environnement.
+
+
 ```bash
 node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 ```
@@ -134,3 +136,95 @@ node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 > **Astuce :**
 >- Utilisez le package [bcrypt](https://www.npmjs.com/package/bcrypt)
 >- Utilisez le package [jsonwebtoken](https://www.npmjs.com/package/jsonwebtoken)
+
+#### Authentification des requêtes
+
+Le JWT obtenu dans [/login]() est un moyen d’indiquer qui fait la requête.  
+Pour cela, il faut passer ce token dans toutes les requêtes API.  
+Le header **Authorization** est fait pour ça.  
+Dans *Postman*, un onglet **Authorization** est présent. Vous pouvez choisir **Bearer Token** dans le select **Auth type**.  
+Saisissez le token dans le champ correspondant.
+
+### Middleware
+Un middleware d’authentification permet de connaitre quel est l’utilisateur associé à un token.  
+Complétez le fichier [auth.middleware.js]() afin d’avoir un middleware qui requière la connexion et un qui est optionnel.  
+
+
+> **Astuce :**
+>- Utilisez req.header
+>- Utilisez la méthode verify de JWT
+>- ⚠️ Le token reçut dans le header est prefixé par le mot 'Bearer'
+
+
+### Posts
+Nous allons créer des articles qui seront liés à des utilisateurs.  
+
+#### Création du modèle
+
+##### Règles:
+- Un utilisateur pourra créer des articles.  
+- Un article est créé par un seul utilisateur.  
+- Si l’utilisateur est supprimé, tous ses articles associés le sont aussi.
+- La clé étrangère est **userId**.  
+
+##### Champs:
+- Complétez le modèle de base de donnée Post dans [src/database/models/post.model.js]().
+  - id
+  - title - requis | entre 3 et 100 caractères
+  - content - requis
+  - published - requis - boolean
+
+#### Création des routes
+- Créer les routes :
+  - GET [/api/posts]()
+  - POST [/api/posts]()
+  - GET [/api/posts/:id]()
+  - PATCH [/api/posts/:id]()
+  - DELETE [/api/posts/:id]()
+
+#### Restrictions
+
+- Get
+  - La route Get ne doit retourner que les posts dont le champ *published* vaut *true*
+  - Si un utilisateur est connecté (token), alors il récupère *en plus* tous ses articles non publiés.
+- Post
+  - Cette route nécessite d’être connecté.
+  - L’utilisateur identifié est automatiquement le créateur de l’article.
+- Get (:id)
+  - Si l’article est publié, n’importe qui peut le voir
+  - Sinon, seul le créateur peut le récupérer, les autres obtiennent une réponse 404 (Permet de ne pas donner d’information sur l’existence ou non)
+- Patch | Delete
+  - Seul le créateur peut modifier et supprimer ses articles
+
+> **Astuce :**
+>- Utilisez des middlewares pour autoriser ou non les utilisateur à effectuer certaines actions
+
+#### Filtrer le liste par utilisateur
+Nous allons mettre en place un filtre de recherche par utilisateur.
+- Ajoutez un paramètre optionnel **user_id** dans l’URL.
+- Si le paramètre est envoyé, alors ne renvoyez que les posts publiés de cet utilisateur.
+
+### Gestion des droits
+Nous allons faire en sorte de pouvoir donner des droits différents à nos utilisateurs.  
+- Faites évoluer votre modèle user pour y inclure le champ **roles** qui sera un tableau de droits.
+- Ajoutez ```ROLE_USER``` par défaut à tous les utilisateurs.
+- Dans votre base de donnée, ajouter ```ROLE_USER``` dans le tableau de role d’un utilisateur de votre choix.
+
+Vous avez maintenant un utilisateur Admin dans votre base de donnée.  
+
+- Faites en sorte que cet utilisateur puisse voir tous les posts même non publiés, voir, éditer et supprimer n’importe quel post sans restriction.  
+- Bloquer également les routes User afin que:
+  - La route POST soit public (inscription)
+  - La route GET renvoie la liste en indiquant uniquement les champs firstName, lastName et Email
+  - La route GET (:id) renvoie les mêmes info que pour la liste mais toutes les informations si l’utilisateur demandé est celui du token
+  - La route DELETE est accessible uniquement par l’utilisateur concerné et l’admin 
+> **Astuce :**
+>- Utilisez DataType.Json
+
+### Documentation
+Nous allons mettre en place une documentation de notre API.  
+Pour celà, vous devez utiliser [swagger](https://swagger.io).  
+
+> **Astuce:**  
+> - [structure](https://swagger.io/docs/specification/v3_0/basic-structure/)
+> - Utilisez des [références](https://swagger.io/docs/specification/v3_0/using-ref/) pour séparer votre documentation en plusieurs fichiers.
